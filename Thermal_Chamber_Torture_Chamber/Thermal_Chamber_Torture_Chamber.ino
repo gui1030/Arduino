@@ -16,7 +16,7 @@
 //Static Variables
 int fanmode;
 int lowhumiditythreshold = 80;
-int thresholdoffset = 10;
+float highhumiditythreshold = 90;
 #define debugmode "DISABLED"
 
 //Define Humidity Sensor Pins
@@ -119,19 +119,17 @@ int calculatedaveragehumidity = 235; //To know when a read is initial and not tu
     calculatedaveragehumidity = updatesensorreadings();
     Serial.print("Calculated:  ");
     Serial.println(calculatedaveragehumidity);
+       if (fanmode == 0 && calculatedaveragehumidity > highhumiditythreshold){
+          digitalWrite(fanrelaypin, LOW);
+        }
+
+        if (fanmode == 0 && calculatedaveragehumidity < highhumiditythreshold){
+          digitalWrite(fanrelaypin, HIGH);
+        }
     previousMillis = millis(); 
       
    }
 
-int highhumiditythreshold = lowhumiditythreshold + thresholdoffset;
-   
-if (fanmode == 0 && calculatedaveragehumidity > highhumiditythreshold){
-digitalWrite(fanrelaypin, LOW);
-}
-
-if (fanmode == 0 && calculatedaveragehumidity < highhumiditythreshold){
-digitalWrite(fanrelaypin, HIGH);
-}
 
 if (calculatedaveragehumidity != 235){
 
