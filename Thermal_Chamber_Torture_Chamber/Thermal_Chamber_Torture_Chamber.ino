@@ -5,29 +5,19 @@
  * 2 relay switches (One for fan/One for Humidifier)
 
 */
-
-//Static Variables
-#define readinterval 10000
-#define humidifierinterval 20000
-//int initialthreshold = 40;
-int previousMillis2;
-unsigned long previoushumidifierMillis;
-int humiditythreshold;
-int previousthreshold;
-int startupdelay = 500;
-int faninitialstate = 0;
-int fanpreviousstate;
-int fanmode;
-unsigned long initialhumiditythreshold = 60;
-#define debugmode "DISABLED"
-#define debuginterval 2000
-
-
+//Included Libraries
 #include "DHT.h"
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <SPI.h>
 #include "Adafruit_HX8357.h"
 #include "TouchScreen.h"
+
+
+//Static Variables
+int fanmode;
+int lowhumiditythreshold = 80;
+int thresholdoffset = 10;
+#define debugmode "DISABLED"
 
 //Define Humidity Sensor Pins
 #define humiditypin1 3
@@ -46,7 +36,6 @@ DHT dht4(humiditypin4, DHTTYPE);
 //Define Relay pins
 #define fanrelaypin A0
 #define humidifierrelaypin A1
-bool humidifierstate;
 
 //Define Touchscreen analog pins
 #define YP A2  // must be an analog pin, use "An" notation!
@@ -83,11 +72,16 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, xplateresistance);
 //Timekeeping variables
 unsigned long previousMillis;
 unsigned long previousdebugMillis;
+unsigned long previoushumidifierMillis;
+#define readinterval 10000
+#define humidifierinterval 20000
+int startupdelay = 500;
+#define debuginterval 2000
 
 
 void setup() {
 
-  // put your setup code here, to run once:
+//Initialize COMs
 Serial.begin(9600);
 dht1.begin();
 dht2.begin();
@@ -101,12 +95,9 @@ delay(startupdelay);
 
 displayinitialize(startupdelay);
 
+//Initialize Relays
 pinMode(fanrelaypin, OUTPUT);
 pinMode(humidifierrelaypin, OUTPUT);
-//pinMode(humiditypin1, INPUT);
-//pinMode(humiditypin2, INPUT);
-//pinMode(humiditypin3, INPUT);
-//pinMode(humiditypin4, INPUT);
 digitalWrite(fanrelaypin, HIGH);
 digitalWrite(humidifierrelaypin, HIGH);
 
@@ -114,19 +105,8 @@ digitalWrite(humidifierrelaypin, HIGH);
 }
 
 void loop() {
-
-//Updating threshold
-/*if (millis() - previousMillis2 > thresholdinterval){ 
-tft.fillRect(15, 380, 20, 40, HX8357_WHITE);
-tft.setCursor(15, 380);
-tft.print(humiditythreshold); 
-previousMillis2 = millis();
-Serial.println(humiditythreshold);
-}
-*/
-
   
-int calculatedaveragehumidity = 235;
+int calculatedaveragehumidity = 235; //To know when a read is initial and not turn on humid/fan
 // Read the sensor when needed.
   if (millis() - previousMillis > readinterval) {
     tft.setTextSize(3);
@@ -142,57 +122,29 @@ int calculatedaveragehumidity = 235;
     previousMillis = millis(); 
       
    }
-//The following code is the stuff last worked on
 
+int highhumiditythreshold = lowhumiditythreshold + thresholdoffset;
+   
+if (fanmode == 2 && calculatedaveragehumidity > highhumiditythreshold){
+digitalWrite(fanrelaypin, LOW);
+}
+
+if (fanmode == 2 && calculatedaveragehumidity < highhumiditythreshold){
+digitalWrite(fanrelaypin, HIGH);
+}
 
 if (calculatedaveragehumidity != 235){
 
-if (calculatedaveragehumidity > initialhumiditythreshold){
-digitalWrite(humidifierrelaypin, HIGH);
-if(fanmode == 0){
-  digitalWrite(fanrelaypin, HIGH);
-}
-  
-}
-
-if (calculatedaveragehumidity < initialhumiditythreshold){
-digitalWrite(humidifierrelaypin, LOW);
-if(fanmode == 0){
-  digitalWrite(fanrelaypin, LOW);
-}
-  
-}
-}
-
-
-/*
-if (((millis() - previoushumidifierMillis) > humidifierinterval) && (calculatedaveragehumidity < initialhumiditythreshold)) {
-
-digitalWrite(humidifierrelaypin, LOW);
-if(fanmode == 2){
-  digitalWrite(fanrelaypin, LOW);
-}
-
-
-previoushumidifierMillis = millis();
-}
-if ((millis() - previoushumidifierMillis > humidifierinterval) && (calculatedaveragehumidity > initialhumiditythreshold)){
-  digitalWrite(humidifierrelaypin, HIGH);
-  if(fanmode == 2){
-    digitalWrite(fanrelaypin, HIGH);
+  if (calculatedaveragehumidity > lowhumiditythreshold){
+  digitalWrite(humidifierrelaypin, HIGH); 
   }
-previoushumidifierMillis = millis();  
+
+  if (calculatedaveragehumidity < lowhumiditythreshold){
+  digitalWrite(humidifierrelaypin, LOW);
+  
+  }
 }
 
--------------------------------
-if(calculatedaveragehumidity < humiditythreshold){
-digitalWrite(humidifierrelaypin, HIGH);
- 
-}
-else if(calculatedaveragehumidity > humiditythreshold){
-digitalWrite(humidifierrelaypin, LOW); 
-}
-*/
 // Retrieve a point  
   TSPoint p = ts.getPoint();   
   if (p.z < MINPRESSURE || p.z > MAXPRESSURE) {
@@ -207,16 +159,12 @@ digitalWrite(humidifierrelaypin, LOW);
 if (p.x < 170 && p.y < 380){
   Serial.print("UP!");
   delay(500);
-  
-  
   }
 
 //Adding in Down button
 if (p.x < 170 && p.y > 390){
   Serial.print("DOWN!");
   delay(500);
-  
-  
   }
 
 // Fan button pushed (3 Different States)
@@ -252,16 +200,8 @@ else if (fanmode == 3){
 
 delay(500); //debounce delay 
 
-
-
-
 if (debugmode == "ENABLED"){debug(fanmode);}
-
-
-
 }
-
-
 }
 
 //----------------------------------------------------------------------
@@ -375,7 +315,7 @@ tft.setCursor(40, 380);
 tft.print(" %RH");
 
 tft.setCursor(20, 380);
-tft.print(initialhumiditythreshold);
+tft.print(lowhumiditythreshold);
 
 
 tft.fillRect(10, 80, 300, 40, HX8357_WHITE); //To erase the "starting" text
