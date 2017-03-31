@@ -125,11 +125,11 @@ int calculatedaveragehumidity = 235; //To know when a read is initial and not tu
 
 int highhumiditythreshold = lowhumiditythreshold + thresholdoffset;
    
-if (fanmode == 2 && calculatedaveragehumidity > highhumiditythreshold){
+if (fanmode == 0 && calculatedaveragehumidity > highhumiditythreshold){
 digitalWrite(fanrelaypin, LOW);
 }
 
-if (fanmode == 2 && calculatedaveragehumidity < highhumiditythreshold){
+if (fanmode == 0 && calculatedaveragehumidity < highhumiditythreshold){
 digitalWrite(fanrelaypin, HIGH);
 }
 
