@@ -15,8 +15,8 @@
 
 //Static Variables
 int fanmode;
-int lowhumiditythreshold = 80;
-float highhumiditythreshold = 90;
+int lowhumiditythreshold = 85;
+int highhumiditythreshold = 90;
 #define debugmode "DISABLED"
 
 //Define Humidity Sensor Pins
@@ -238,14 +238,14 @@ tft.fillRect(180, 420, BOXWIDTH, BOXHEIGHT/2, HX8357_BLUE);
 tft.print(".");
 delay(startupdelay);
 
-
+/*
 tft.fillRect(115, 320, 50, 60, HX8357_BLUE);
 tft.print(".");
 delay(startupdelay);
 tft.fillRect(115, 400, 50, 60, HX8357_BLUE);
 tft.print(".");
 delay(startupdelay);
-
+*/
 
 
 //Fill in Text
@@ -297,24 +297,28 @@ tft.print("Hum: ");
 tft.setCursor(200, 428);
 tft.print("Fan AUTO");
 
+//Thresholds are constant for now
+/*
 tft.setCursor(127, 335);
 tft.print("UP");
 tft.setCursor(117, 415);
 tft.print("DOWN");
-
+*/
 tft.setTextSize(2);
 tft.setTextColor(HX8357_BLACK);
-tft.setCursor(2, 320);
+tft.setCursor(20, 320);
 tft.print("Humidity");
-tft.setCursor(1, 340);
+tft.setCursor(20, 340);
 tft.print("Thresh:");
 
-tft.setCursor(40, 380);
+tft.setCursor(110, 380);
 tft.print(" %RH");
 
 tft.setCursor(20, 380);
 tft.print(lowhumiditythreshold);
-
+tft.print(" - ");
+tft.setCursor(80, 380);
+tft.print(highhumiditythreshold);
 
 tft.fillRect(10, 80, 300, 40, HX8357_WHITE); //To erase the "starting" text
 }
@@ -378,12 +382,12 @@ tft.setCursor(181, 341);
 tft.print("Temp: ");
 tft.setCursor(181, 361);
 tft.print("Hum: ");
-
+/*
 tft.setCursor(127, 335);
 tft.print("UP");
 tft.setCursor(117, 415);
 tft.print("DOWN");
-
+*/
 }
 
 float updatesensorreadings(){
