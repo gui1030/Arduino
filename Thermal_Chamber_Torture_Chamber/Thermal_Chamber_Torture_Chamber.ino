@@ -73,10 +73,17 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, xplateresistance);
 unsigned long previousMillis;
 unsigned long previousdebugMillis;
 unsigned long previoushumidifierMillis;
+unsigned long previousmin;
+int mincounter;
+int hourcounter;
+int daycounter;
+
+#define mininterval 60000
 #define readinterval 10000
 #define humidifierinterval 20000
 int startupdelay = 500;
 #define debuginterval 2000
+
 
 
 void setup() {
@@ -200,6 +207,31 @@ delay(500); //debounce delay
 
 if (debugmode == "ENABLED"){debug(fanmode);}
 }
+
+if (millis() - previousmin > mininterval){
+  previousmin = millis();
+  mincounter++;
+  if (mincounter > 59){
+    hourcounter++;
+    mincounter = 0;
+  }
+  if (hourcounter > 23){
+    daycounter++;
+    hourcounter = 0;
+  }
+tft.fillRect(20, 80, 300, 20, HX8357_WHITE);  
+tft.setCursor(20,80);
+tft.setTextSize(2);
+tft.setTextColor(HX8357_BLACK);
+tft.print(daycounter);
+tft.print(" D  ");
+tft.print(hourcounter);
+tft.print(" H  ");
+tft.print(mincounter);
+tft.print(" M  Elapsed");
+}
+
+
 }
 
 //----------------------------------------------------------------------
@@ -321,6 +353,17 @@ tft.setCursor(80, 380);
 tft.print(highhumiditythreshold);
 
 tft.fillRect(10, 80, 300, 40, HX8357_WHITE); //To erase the "starting" text
+
+tft.setCursor(20,80);
+tft.setTextSize(2);
+tft.setTextColor(HX8357_BLACK);
+tft.print("0");
+tft.print(" D  ");
+tft.print("0");
+tft.print(" H  ");
+tft.print("0");
+tft.print(" M  Elapsed");
+  
 }
 
 
