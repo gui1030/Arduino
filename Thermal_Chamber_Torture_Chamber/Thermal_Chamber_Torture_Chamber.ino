@@ -15,6 +15,7 @@
 
 //Static Variables
 int fanmode;
+int humidifiermode;
 int lowhumiditythreshold = 85;
 int highhumiditythreshold = 90;
 #define debugmode "DISABLED"
@@ -89,15 +90,17 @@ int startupdelay = 500;
 void setup() {
 
 //Initialize COMs
-Serial.begin(9600);
 dht1.begin();
 dht2.begin();
 dht3.begin();
 dht4.begin();
 
+if (debugmode == "ENABLED"){
+Serial.begin(9600);
 Serial.println("Starting...");
 Serial.print("Debugging: ");
 Serial.println(debugmode);
+}
 delay(startupdelay);
 
 displayinitialize(startupdelay);
@@ -124,8 +127,10 @@ int calculatedaveragehumidity = 235; //To know when a read is initial and not tu
     tft.setTextSize(2);
     refreshtft();
     calculatedaveragehumidity = updatesensorreadings();
+    if (debugmode == "ENABLED"){
     Serial.print("Calculated:  ");
     Serial.println(calculatedaveragehumidity);
+    }
        if (fanmode == 0 && calculatedaveragehumidity > highhumiditythreshold){
           digitalWrite(fanrelaypin, LOW);
         }
@@ -136,15 +141,18 @@ int calculatedaveragehumidity = 235; //To know when a read is initial and not tu
     previousMillis = millis(); 
       
    }
-
-
+if (debugmode == "ENABLED"){
+  Serial.print("Humidifiermode: ");
+  Serial.println(humidifiermode);
+}
+//Humidifier control
 if (calculatedaveragehumidity != 235){
 
-  if (calculatedaveragehumidity > lowhumiditythreshold){
+  if (humidifiermode <= 0 && calculatedaveragehumidity > lowhumiditythreshold){
   digitalWrite(humidifierrelaypin, HIGH); 
   }
 
-  if (calculatedaveragehumidity < lowhumiditythreshold){
+  if (humidifiermode <= 0 && calculatedaveragehumidity < lowhumiditythreshold){
   digitalWrite(humidifierrelaypin, LOW);
   
   }
@@ -160,17 +168,17 @@ if (calculatedaveragehumidity != 235){
   p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
 
 
-//Adding in Up button
-if (p.x < 170 && p.y < 380){
-  Serial.print("UP!");
-  delay(500);
-  }
-
-//Adding in Down button
-if (p.x < 170 && p.y > 390){
-  Serial.print("DOWN!");
-  delay(500);
-  }
+////Adding in Up button
+//if (p.x < 170 && p.y < 380){
+//  Serial.print("UP!");
+//  delay(500);
+//  }
+//
+////Adding in Down button
+//if (p.x < 170 && p.y > 390){
+//  Serial.print("DOWN!");
+//  delay(500);
+//  }
 
 // Fan button pushed (3 Different States)
 if (p.x > 200 && p.y > 400)
@@ -207,6 +215,45 @@ delay(500); //debounce delay
 
 if (debugmode == "ENABLED"){debug(fanmode);}
 }
+
+// humidifier button pushed (3 Different States)
+if (p.x < 180 && p.y > 400)
+{ 
+
+humidifiermode++;
+tft.setTextColor(HX8357_WHITE);
+if (humidifiermode == 1){
+tft.fillRect(20, 420, 115, BOXHEIGHT/2, HX8357_RED);
+tft.setCursor(25, 428);
+tft.print("Hum OFF");
+digitalWrite(humidifierrelaypin, HIGH);
+}
+
+else if (humidifiermode == 2){
+tft.fillRect(20, 420, 115, BOXHEIGHT/2, HX8357_GREEN);
+tft.setCursor(25, 428);
+tft.print("Hum ON");
+digitalWrite(humidifierrelaypin, LOW);
+
+}
+
+else if (humidifiermode == 0){
+tft.fillRect(20, 420, 115, BOXHEIGHT/2, HX8357_BLUE);
+tft.setCursor(25, 428);
+tft.print("Hum AUTO");
+
+}
+else if (humidifiermode == 3){
+  humidifiermode = -1;
+}
+
+delay(500); //debounce delay 
+
+
+}
+
+
+//Time keeping since start of program
 
 if (millis() - previousmin > mininterval){
   previousmin = millis();
@@ -269,7 +316,9 @@ delay(startupdelay);
 tft.fillRect(180, 420, BOXWIDTH, BOXHEIGHT/2, HX8357_BLUE);
 tft.print(".");
 delay(startupdelay);
-
+tft.fillRect(20, 420, BOXWIDTH, BOXHEIGHT/2, HX8357_BLUE);
+tft.print(".");
+delay(startupdelay);
 /*
 tft.fillRect(115, 320, 50, 60, HX8357_BLUE);
 tft.print(".");
@@ -326,8 +375,10 @@ tft.print("Temp: ");
 tft.setCursor(181, 361);
 tft.print("Hum: ");
 
-tft.setCursor(200, 428);
+tft.setCursor(195, 428);
 tft.print("Fan AUTO");
+tft.setCursor(25, 428);
+tft.print("Hum AUTO");
 
 //Thresholds are constant for now
 /*
