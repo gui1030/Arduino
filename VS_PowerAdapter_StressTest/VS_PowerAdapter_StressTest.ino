@@ -49,8 +49,7 @@ delay(2000);
 
 void loop() {
 
-//Set the initial time delay, which will then become random between 10-30 Min
-
+displayloopnumber();
 if (loopcounter == 0){
  long timedelay = 10000;
 }
@@ -77,7 +76,6 @@ if (millis() - previousmillis > timedelay){
 }
 
 loopcounter ++;
-displayloopnumber();
 }
 
 //-------------------------------------------------------------------------------------------------------
@@ -101,6 +99,7 @@ display.setCursor(0,0);
 display.print("VeriSolutions");
 display.setCursor(20,0);
 display.print("TIP: ");
+displayloopnumber();
 display.display();
 }
 

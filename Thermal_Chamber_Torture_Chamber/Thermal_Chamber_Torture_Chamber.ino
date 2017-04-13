@@ -1,4 +1,4 @@
-/*This code is for creating a thermal chamber/torture chamber for humidity/temp 
+/*This code is for creating a thermal chamber/torture chamber for humidity/temp
  * Using DHT22 sensors (DHT11 for testing)
  * 3.5 TFT touchscreen as user interface
  * 4 sensors
@@ -16,8 +16,8 @@
 //Static Variables
 int fanmode;
 int humidifiermode;
-int lowhumiditythreshold = 85;
-int highhumiditythreshold = 90;
+int lowhumiditythreshold = 73;
+int highhumiditythreshold = 86;
 #define debugmode "DISABLED"
 
 //Define Humidity Sensor Pins
@@ -115,7 +115,7 @@ digitalWrite(humidifierrelaypin, HIGH);
 }
 
 void loop() {
-  
+
 int calculatedaveragehumidity = 235; //To know when a read is initial and not turn on humid/fan
 // Read the sensor when needed.
   if (millis() - previousMillis > readinterval) {
@@ -138,8 +138,8 @@ int calculatedaveragehumidity = 235; //To know when a read is initial and not tu
         if (fanmode == 0 && calculatedaveragehumidity < highhumiditythreshold){
           digitalWrite(fanrelaypin, HIGH);
         }
-    previousMillis = millis(); 
-      
+    previousMillis = millis();
+
    }
 if (debugmode == "ENABLED"){
   Serial.print("Humidifiermode: ");
@@ -149,20 +149,20 @@ if (debugmode == "ENABLED"){
 if (calculatedaveragehumidity != 235){
 
   if (humidifiermode <= 0 && calculatedaveragehumidity > lowhumiditythreshold){
-  digitalWrite(humidifierrelaypin, HIGH); 
+  digitalWrite(humidifierrelaypin, HIGH);
   }
 
   if (humidifiermode <= 0 && calculatedaveragehumidity < lowhumiditythreshold){
   digitalWrite(humidifierrelaypin, LOW);
-  
+
   }
 }
 
-// Retrieve a point  
-  TSPoint p = ts.getPoint();   
+// Retrieve a point
+  TSPoint p = ts.getPoint();
   if (p.z < MINPRESSURE || p.z > MAXPRESSURE) {
      return;
-  } 
+  }
   // Scale from ~0->1000 to tft.width using the calibration #'s
   p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
   p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
@@ -182,7 +182,7 @@ if (calculatedaveragehumidity != 235){
 
 // Fan button pushed (3 Different States)
 if (p.x > 200 && p.y > 400)
-{ 
+{
 
 fanmode++;
 
@@ -211,14 +211,14 @@ else if (fanmode == 3){
   fanmode = -1;
 }
 
-delay(500); //debounce delay 
+delay(500); //debounce delay
 
 if (debugmode == "ENABLED"){debug(fanmode);}
 }
 
 // humidifier button pushed (3 Different States)
 if (p.x < 180 && p.y > 400)
-{ 
+{
 
 humidifiermode++;
 tft.setTextColor(HX8357_WHITE);
@@ -247,7 +247,7 @@ else if (humidifiermode == 3){
   humidifiermode = -1;
 }
 
-delay(500); //debounce delay 
+delay(500); //debounce delay
 
 
 }
@@ -266,7 +266,7 @@ if (millis() - previousmin > mininterval){
     daycounter++;
     hourcounter = 0;
   }
-tft.fillRect(20, 80, 300, 20, HX8357_WHITE);  
+tft.fillRect(20, 80, 300, 20, HX8357_WHITE);
 tft.setCursor(20,80);
 tft.setTextSize(2);
 tft.setTextColor(HX8357_BLACK);
@@ -286,7 +286,7 @@ tft.print(" M  Elapsed");
 
 //This function sets up the Display
 void displayinitialize(int startupdelay){
-  
+
 tft.begin(HX8357D);
 tft.fillScreen(HX8357_WHITE);
 tft.setCursor(30,40);
@@ -296,7 +296,7 @@ tft.println("Thermal Chamber");
 tft.setTextSize(2);
 tft.setCursor(30,80);
 tft.print("Starting");
-  
+
   //Create Boxes
 tft.fillRect(20, 120, BOXWIDTH, BOXHEIGHT, HX8357_BLACK);
 tft.print(".");
@@ -414,7 +414,7 @@ tft.print("0");
 tft.print(" H  ");
 tft.print("0");
 tft.print(" M  Elapsed");
-  
+
 }
 
 
@@ -422,7 +422,7 @@ tft.print(" M  Elapsed");
 
 
 
-//This refresh does not affect the Fan on/off indicator 
+//This refresh does not affect the Fan on/off indicator
 void refreshtft(){
   //Create Boxes
 tft.fillRect(40, 120, BOXWIDTH, BOXHEIGHT, HX8357_BLACK);
@@ -485,21 +485,21 @@ tft.print("DOWN");
 }
 
 float updatesensorreadings(){
-        
+
         float h1 = dht1.readHumidity(4);
         float h2 = dht2.readHumidity(4);
         float h3 = dht3.readHumidity(4);
         float h4 = dht4.readHumidity(4);
-        
+
         float t1 = dht1.readTemperature(4);
         float t2 = dht2.readTemperature(4);
         float t3 = dht3.readTemperature(4);
         float t4 = dht4.readTemperature(4);
-        
+
         float averagehumidity = (h1 + h2 + h3 + h4) / 4;
         float averagetemp = (t1 + t2 + t3 + t4) / 4;
 
-          // Print Values to TFT screen 
+          // Print Values to TFT screen
           tft.setTextSize(2);
           tft.setTextColor(HX8357_WHITE);
           tft.setCursor(91, 141);
@@ -525,10 +525,10 @@ float updatesensorreadings(){
           tft.setCursor(251, 341);
           tft.print(averagetemp);
           tft.setCursor(251, 361);
-          tft.print(averagehumidity); 
+          tft.print(averagehumidity);
 
- 
-          
+
+
           tft.fillRect(88, 0, 145, 25, HX8357_WHITE);
 
 return averagehumidity;
@@ -536,57 +536,57 @@ return averagehumidity;
 
 void debug(int fanmode){
 // Serial printing for debugging
-  if (millis() - previousdebugMillis > debuginterval) {  
+  if (millis() - previousdebugMillis > debuginterval) {
     previousdebugMillis = millis();
-    
+
         int h1 = dht1.readHumidity();
         int h2 = dht2.readHumidity();
         int h3 = dht3.readHumidity();
         int h4 = dht4.readHumidity();
-        
+
         int t1 = dht1.readTemperature();
         int t2 = dht2.readTemperature();
         int t3 = dht3.readTemperature();
         int t4 = dht4.readTemperature();
-        
+
         int averagehumidity = (h1 + h2 + h3 + h4) / 4;
         int averagetemp = (t1 + t2 + t3 + t4) / 4;
-        
+
    Serial.println("\n");
         Serial.println("\n");
         Serial.println("Humidity (RH%)            Temperature (C)            Average Temp          Average Humidity");
         Serial.println("1    2    3    4          1    2    3    4    ");
-        Serial.print(h1);   
-        Serial.print("%  "); 
-        Serial.print(h2);   
-        Serial.print("%  "); 
-        Serial.print(h3);   
-        Serial.print("%  "); 
-        Serial.print(h4);   
-        Serial.print("%        "); 
-        Serial.print(t1);   
-        Serial.print("   "); 
-        Serial.print(t2);   
-        Serial.print("   "); 
-        Serial.print(t3);   
-        Serial.print("   "); 
-        Serial.print(t4);   
-        Serial.print("              "); 
+        Serial.print(h1);
+        Serial.print("%  ");
+        Serial.print(h2);
+        Serial.print("%  ");
+        Serial.print(h3);
+        Serial.print("%  ");
+        Serial.print(h4);
+        Serial.print("%        ");
+        Serial.print(t1);
+        Serial.print("   ");
+        Serial.print(t2);
+        Serial.print("   ");
+        Serial.print(t3);
+        Serial.print("   ");
+        Serial.print(t4);
+        Serial.print("              ");
         Serial.print(averagetemp);
-        Serial.print("                       "); 
+        Serial.print("                       ");
         Serial.print(averagehumidity);
         Serial.print("%");
-        Serial.println("\n");  
-        Serial.println("\n");  
+        Serial.println("\n");
+        Serial.println("\n");
   }
 TSPoint p = ts.getPoint();
- 
+
   // we have some minimum pressure we consider 'valid'
   // pressure of 0 means no pressing!
   if (p.z < MINPRESSURE || p.z > MAXPRESSURE) {
      return;
-  } 
-   
+  }
+
   // Scale from ~0->1000 to tft.width using the calibration #'s
   p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
   p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
@@ -594,10 +594,10 @@ TSPoint p = ts.getPoint();
   Serial.print("X = "); Serial.print(p.x);
   Serial.print("\tY = "); Serial.print(p.y);
   Serial.print("\tPressure = "); Serial.println(p.z);
-  Serial.println("  ");     
+  Serial.println("  ");
   Serial.println("  ");
   Serial.print("Fanstate:  ");
   Serial.println(fanmode);
-  Serial.println("  "); 
-        
+  Serial.println("  ");
+
 }
