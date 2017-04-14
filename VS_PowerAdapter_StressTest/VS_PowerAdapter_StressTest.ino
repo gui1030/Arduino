@@ -16,9 +16,9 @@
 #define OLED_RESET 4
 #define min 60000
 #define sec 1000
-long randNumber;
-long timedelay;
-long previousmillis;
+unsigned long randNumber;
+unsigned long timedelay = 10 * sec;
+unsigned long previousmillis;
 int loopcounter;
 
 
@@ -37,9 +37,9 @@ oledinit();
 //Setup Pin Configuration
 pinMode(voltagepin, INPUT);
 pinMode(relaypin, OUTPUT);
-digitalWrite(relaypin, HIGH);
+digitalWrite(relaypin, LOW);
 
-delay(2000);
+delay(500);
 
 }
 
@@ -49,45 +49,46 @@ delay(2000);
 
 void loop() {
 
-displayloopnumber();
-if (loopcounter == 0){
- long timedelay = 10000;
-}
-
 if (millis() - previousmillis > timedelay){
-  previousmillis = millis();
+
   oledinittest();
-  randNumber = random(10, 30);
-  timedelay = randNumber * min;
   oledprintdelay(timedelay);
   bool success = runtest();
 
     if (success == true){
-       display.setCursor(20,20);
-       display.print("PASS");
+       display.setCursor(40,20);
+       display.print("  PASS");
        display.display();
+       delay(2000);
       }
 
      while (success == false){
-        display.setCursor(20,20);
-        display.print("FAILED");
+        display.setCursor(40,20);
+        display.print("  FAILED");
         display.display();
+        delay(2000);
        }
-}
 
 loopcounter ++;
+oledinitloop();
+oledprintdelay(timedelay);
+previousmillis = millis();
+}
+
 }
 
 //-------------------------------------------------------------------------------------------------------
 //Functions Under here
 //-------------------------------------------------------------------------------------------------------
 
+
 void oledinit(){
 display.clearDisplay();
 display.setTextSize(1);
 display.setTextColor(WHITE);
 display.setCursor(0,0);
-display.print("VeriSolutions");
+display.println("VeriSolutions");
+display.print("Starting...");
 display.display();
 }
 
@@ -97,39 +98,50 @@ display.setTextSize(1);
 display.setTextColor(WHITE);
 display.setCursor(0,0);
 display.print("VeriSolutions");
-display.setCursor(20,0);
-display.print("TIP: ");
+display.setCursor(0,20);
+display.print("Testing: ");
 displayloopnumber();
 display.display();
 }
 
+void oledinitloop(){
+display.clearDisplay();
+display.setTextSize(1);
+display.setTextColor(WHITE);
+display.setCursor(0,0);
+display.print("VeriSolutions");
+oledprintdelay(timedelay);
+displayloopnumber();
+display.display();
+}
 
 void oledprintdelay(int printdelay){
-  display.setCursor(10,0);
+  display.setCursor(0,10);
   display.print("Delay Value: ");
-  display.print(printdelay);
+  display.print(printdelay/1000);
+  display.print(" Sec");
   display.display();
 }
 
 void displayloopnumber(){
-  display.setCursor(20,80);
+  display.setCursor(100,0);
   display.print(loopcounter);
   display.display();
 }
 
 // This function returns 1 if the test passes and 0 if it fails
 int runtest(){
-  digitalWrite(relaypin, LOW); //Turn relay on
-  delay(1000);
+  digitalWrite(relaypin, HIGH); //Turn relay on
+  delay(8000);
     bool voltagepinstate = digitalRead(voltagepin);
       if (voltagepinstate == HIGH){
         delay(1000);
-        digitalWrite(relaypin, HIGH); //Should turn relay off
+        digitalWrite(relaypin, LOW); //Should turn relay off
         return 1;
       }
       else {
         delay(1000);
-        digitalWrite(relaypin, HIGH); //Should turn relay off
+        digitalWrite(relaypin, LOW); //Should turn relay off
         return 0;
       }
 }

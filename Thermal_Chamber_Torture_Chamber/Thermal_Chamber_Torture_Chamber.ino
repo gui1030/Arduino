@@ -16,8 +16,8 @@
 //Static Variables
 int fanmode;
 int humidifiermode;
-int lowhumiditythreshold = 73;
-int highhumiditythreshold = 86;
+int lowhumiditythreshold = 77;
+int highhumiditythreshold = 80;
 #define debugmode "DISABLED"
 
 //Define Humidity Sensor Pins
